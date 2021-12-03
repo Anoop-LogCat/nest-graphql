@@ -1,4 +1,5 @@
-import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
+import { Resolver, Query, Args, Mutation, Subscription } from '@nestjs/graphql';
+import { PubSub } from 'graphql-subscriptions';
 import { User } from 'src/models/user.model';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
@@ -6,7 +7,10 @@ import { UserService } from './user.service';
 
 @Resolver(User.name)
 export class UserResolver {
-  constructor(private userService: UserService) {}
+  pubSub: PubSub;
+  constructor(private userService: UserService) {
+    this.pubSub = new PubSub();
+  }
 
   @Query(() => User, { name: 'user' })
   getUser(@Args('uid') uid: string): User {
@@ -20,7 +24,9 @@ export class UserResolver {
 
   @Mutation(() => User, { name: 'createUser' })
   createUser(@Args('data') createUserInput: CreateUserInput): User {
-    return this.userService.createUser(createUserInput);
+    const user = this.userService.createUser(createUserInput);
+    this.pubSub.publish('userAdded', { userAdded: user });
+    return user;
   }
 
   @Mutation(() => User, { name: 'updateUser' })
@@ -31,5 +37,10 @@ export class UserResolver {
   @Mutation(() => User, { name: 'deleteUser' })
   deleteUser(@Args('uid') uid: string): User {
     return this.userService.deleteUser(uid);
+  }
+
+  @Subscription(() => User)
+  userAdded() {
+    return this.pubSub.asyncIterator('userAdded');
   }
 }
