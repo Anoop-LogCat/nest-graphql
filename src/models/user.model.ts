@@ -1,4 +1,5 @@
 import { Field, ObjectType, ID } from '@nestjs/graphql';
+import { Post } from './post.model';
 
 @ObjectType()
 export class User {
@@ -19,4 +20,7 @@ export class User {
 
   @Field({ nullable: true })
   lastLoggedIn?: Date;
+
+  @Field((type) => [Post])
+  posts: Post[];
 }
