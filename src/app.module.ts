@@ -11,7 +11,7 @@ import { join } from 'path';
       subscriptions: {
         'graphql-ws': true,
       },
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      autoSchemaFile: true,
     }),
     UserModule,
   ],
